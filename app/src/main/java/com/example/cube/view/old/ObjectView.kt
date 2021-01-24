@@ -113,7 +113,7 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
                 val projectedPoint = ProjectedPoint(it, projection)
                 points[it] = projectedPoint
             }
-            drawPoints(points.values.toList())
+            //drawPoints(points.values.toList())
             val connections = connections.map {
                 val p1 = points[it.p1]!!
                 val p2 = points[it.p2]!!
