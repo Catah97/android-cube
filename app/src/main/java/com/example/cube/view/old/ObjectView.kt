@@ -21,7 +21,8 @@ import kotlinx.coroutines.*
 
 class ObjectView: SurfaceView, SurfaceHolder.Callback {
 
-    private val scene = Scene()
+    var currentObject: Object? = null
+    val scene = Scene()
 
     private val scaleListener = ScaleGestureListener(scene)
     private val gestureListener = SimpleGestureListener(scene)
@@ -57,7 +58,6 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
         holder
     }
 
-    var currentObject: Object? = null
 
     constructor(context: Context?) : super(context)
 
@@ -69,17 +69,7 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
             defStyle
     )
 
-    constructor(
-            context: Context?,
-            attrs: AttributeSet?,
-            defStyleAttr: Int,
-            defStyleRes: Int
-    ) : super(
-            context,
-            attrs,
-            defStyleAttr,
-            defStyleRes
-    )
+
     override fun onTouchEvent(ev: MotionEvent): Boolean {
         scaleDetector.onTouchEvent(ev)
         gestureDetector.onTouchEvent(ev)

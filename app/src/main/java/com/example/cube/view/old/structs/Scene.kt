@@ -1,16 +1,14 @@
 package com.example.cube.view.old.structs
 
+import java.io.Serializable
 import kotlin.random.Random
 
-class Scene {
+class Scene: Serializable {
     var isTouching: Boolean = false
     var scaleFactor: Float = 1.0F
     var angleX: Double = 0.0
     var angleY: Double = 0.0
     var angleZ: Double = 0.0
-
-    var width: Int = -1
-    var height: Int = -1
 
     fun moveAngle() {
         if (!isTouching) {
@@ -18,6 +16,14 @@ class Scene {
             angleY = angleY.moveAngle()
             angleZ = angleZ.moveAngle()
         }
+    }
+
+    fun use(scene: Scene) {
+        isTouching = scene.isTouching
+        scaleFactor = scene.scaleFactor
+        angleX = scene.angleX
+        angleY = scene.angleY
+        angleZ = scene.angleZ
     }
 }
 

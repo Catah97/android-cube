@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.cube.`object`.Cube
 import com.example.cube.databinding.ActivityMainBinding
+import com.example.cube.view.old.structs.Scene
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,7 +16,19 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
         val objectView = binding.objectView
-        objectView.currentObject = Cube()
+        objectView.apply {
+            currentObject = Cube()
+            if (savedInstanceState != null) {
+                val savedScene = savedInstanceState.getSerializable(SCENE_KEY) as Scene
+                scene.use(savedScene)
+            }
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val scene = binding.objectView.scene
+        outState.putSerializable(SCENE_KEY, scene)
     }
 
     override fun onResume() {
@@ -26,5 +39,9 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         binding.objectView.pause()
         super.onPause()
+    }
+
+    companion object {
+        private const val SCENE_KEY = "sceneSaveKey"
     }
 }
