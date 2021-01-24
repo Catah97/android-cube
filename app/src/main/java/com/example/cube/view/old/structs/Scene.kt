@@ -1,5 +1,7 @@
 package com.example.cube.view.old.structs
 
+import kotlin.random.Random
+
 class Scene {
     var isTouching: Boolean = false
     var scaleFactor: Float = 1.0F
@@ -10,27 +12,29 @@ class Scene {
     var width: Int = -1
     var height: Int = -1
 
-    fun move() {
+    fun moveAngle() {
         if (!isTouching) {
-            angleX = angleX.move()
-            angleY = angleY.move()
-            angleZ = angleZ.move()
+            angleX = angleX.moveAngle()
+            angleY = angleY.moveAngle()
+            angleZ = angleZ.moveAngle()
         }
     }
-
-    private fun Double.move(): Double {
-        val result =  this + ANIMATION_MOVE
-        return if (result > MAX_ANGLE) {
-            0.0
-        } else {
-            result
-        }
-    }
-
-    companion object {
-        private val MAX_ANGLE = Math.PI * 2
-        private val ANIMATION_MOVE = 0.05
-
-    }
-
 }
+
+private fun Double.moveAngle(): Double {
+    val newAngle = Random.nextDouble(MIN_ANIMATION_MOVE, MAX_ANIMATION_MOVE)
+    return moveAngle(newAngle)
+}
+
+fun Double.moveAngle(angle: Double): Double {
+    val result = this + angle
+    return if (result > MAX_ANGLE) {
+        0.0
+    } else {
+        result
+    }
+}
+
+private const val MAX_ANGLE = Math.PI * 2
+private const val MAX_ANIMATION_MOVE = 0.05
+private const val MIN_ANIMATION_MOVE = 0.03

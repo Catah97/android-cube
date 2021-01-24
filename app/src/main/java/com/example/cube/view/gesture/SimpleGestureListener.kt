@@ -3,6 +3,7 @@ package com.example.cube.view.gesture
 import android.view.GestureDetector
 import android.view.MotionEvent
 import com.example.cube.view.old.structs.Scene
+import com.example.cube.view.old.structs.moveAngle
 import kotlin.math.atan
 
 class SimpleGestureListener(
@@ -31,10 +32,10 @@ class SimpleGestureListener(
     ): Boolean {
         val minimum = minOf(width ?: 0, height ?: 0)
         calculateAngle(minimum, distanceX) {
-            scene.angleY += it
+            scene.angleY.moveAngle(it)
         }
         calculateAngle(minimum, distanceY) {
-            scene.angleX += it
+            scene.angleX.moveAngle(it)
         }
         return false
     }

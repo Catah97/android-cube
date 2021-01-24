@@ -109,7 +109,7 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
                     if (surfaceHolder.surface.isValid) {
                         drawObject()
                     }
-                    scene.move()
+                    scene.moveAngle()
                 }
             }
         }
