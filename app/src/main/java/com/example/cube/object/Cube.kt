@@ -1,0 +1,37 @@
+package com.example.cube.`object`
+
+import com.example.cube.`object`.structs.Connection
+import com.example.cube.`object`.structs.Point
+
+class Cube: Object() {
+
+    override val points: List<Point>
+        get() = listOf(
+            Point(-1, 1, 1),
+            Point(1, 1, 1),
+            Point(1, -1, 1),
+            Point(-1, -1, 1),
+            Point(-1, 1, -1),
+            Point(1, 1, -1),
+            Point(1, -1, -1),
+            Point(-1, -1, -1),
+        )
+
+    override val connections: List<Connection>
+        get() = listOf(
+            Connection(points[0], points[1]),
+            Connection(points[1], points[2]),
+            Connection(points[2], points[3]),
+            Connection(points[3], points[0]),
+
+            Connection(points[4], points[5]),
+            Connection(points[5], points[6]),
+            Connection(points[6], points[7]),
+            Connection(points[7], points[4]),
+
+            Connection(points[0], points[4]),
+            Connection(points[1], points[5]),
+            Connection(points[2], points[6]),
+            Connection(points[3], points[7]),
+        )
+}
