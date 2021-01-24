@@ -1,8 +1,10 @@
 package com.example.cube.view.old
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
 import android.util.AttributeSet
 import android.view.*
 import com.example.cube.`object`.Object
@@ -12,6 +14,7 @@ import com.example.cube.view.gesture.ScaleGestureListener
 import com.example.cube.view.gesture.SimpleGestureListener
 import com.example.cube.view.old.structs.ProjectedConnection
 import com.example.cube.view.old.structs.ProjectedPoint
+import com.example.cube.view.old.structs.ProjectedWall
 import com.example.cube.view.old.structs.Scene
 import kotlinx.coroutines.*
 
@@ -26,11 +29,24 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
     private val scaleDetector = ScaleGestureDetector(context, scaleListener)
     private val gestureDetector = GestureDetector(context, gestureListener)
 
-    private val paint = Paint().apply {
+    private val paintLine = Paint().apply {
         color = Color.WHITE
-        style = Paint.Style.FILL
+        style = Paint.Style.STROKE
         strokeWidth = 1F
     }
+
+    private val paintWall = Paint().apply {
+        style = Paint.Style.FILL
+    }
+
+    private val wallColors = listOf(
+            Color.BLUE,
+            Color.rgb(255, 165, 0),
+            Color.WHITE,
+            Color.GREEN,
+            Color.RED,
+            Color.YELLOW
+    )
 
     private var running: Boolean = false
     private var viewJob: Job? = null
@@ -48,21 +64,21 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs, 0)
 
     constructor(context: Context?, attrs: AttributeSet?, defStyle: Int) : super(
-        context,
-        attrs,
-        defStyle
+            context,
+            attrs,
+            defStyle
     )
 
     constructor(
-        context: Context?,
-        attrs: AttributeSet?,
-        defStyleAttr: Int,
-        defStyleRes: Int
+            context: Context?,
+            attrs: AttributeSet?,
+            defStyleAttr: Int,
+            defStyleRes: Int
     ) : super(
-        context,
-        attrs,
-        defStyleAttr,
-        defStyleRes
+            context,
+            attrs,
+            defStyleAttr,
+            defStyleRes
     )
     override fun onTouchEvent(ev: MotionEvent): Boolean {
         scaleDetector.onTouchEvent(ev)
@@ -113,31 +129,46 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
                 val projectedPoint = ProjectedPoint(it, projection)
                 points[it] = projectedPoint
             }
-            //drawPoints(points.values.toList())
             val connections = connections.map {
                 val p1 = points[it.p1]!!
                 val p2 = points[it.p2]!!
                 ProjectedConnection(it, p1, p2)
             }
-            drawConnections(connections)
+            val walls = walls.mapIndexed { i, wall ->
+                val wallPoints = wall.points.map {
+                    points[it]!!
+                }
+                val color = wallColors[i % wallColors.size]
+                ProjectedWall(wall, color, wallPoints)
+            }.sortedBy { wall ->
+                wall.points.minOf {
+                    it.z
+                }
+            }
+            draw(points.values.toList(), connections, walls)
         }
     }
 
-    private fun drawPoints(points: List<ProjectedPoint>) {
+    private fun draw(points: List<ProjectedPoint>, connections: List<ProjectedConnection>, walls: List<ProjectedWall>) {
         val canvas = surfaceHolder.lockCanvas()
         canvas.drawColor(Color.BLACK)
+        //drawPoints(canvas, points)
+        //drawConnections(canvas, connections)
+        drawWalls(canvas, walls)
+        surfaceHolder.unlockCanvasAndPost(canvas)
+    }
+
+    private fun drawPoints(canvas: Canvas, points: List<ProjectedPoint>) {
         val centerX = canvas.width / 2
         val centerY = canvas.height / 2
         for (point in points) {
             val x = point.x + centerX
             val y = point.y + centerY
-            canvas.drawCircle(x, y, 10F, paint)
+            canvas.drawCircle(x, y, 10F, paintLine)
         }
-        surfaceHolder.unlockCanvasAndPost(canvas)
     }
 
-    private fun drawConnections(connections: List<ProjectedConnection>) {
-        val canvas = surfaceHolder.lockCanvas()
+    private fun drawConnections(canvas: Canvas, connections: List<ProjectedConnection>) {
         canvas.drawColor(Color.BLACK)
         val centerX = canvas.width / 2
         val centerY = canvas.height / 2
@@ -148,9 +179,29 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
             val p1y = p1.y + centerY
             val p2x = p2.x + centerX
             val p2y = p2.y + centerY
-            canvas.drawLine(p1x, p1y, p2x, p2y, paint)
+            canvas.drawLine(p1x, p1y, p2x, p2y, paintLine)
         }
-        surfaceHolder.unlockCanvasAndPost(canvas)
+    }
+
+    private fun drawWalls(canvas: Canvas, walls: List<ProjectedWall>) {
+        val centerX = canvas.width / 2
+        val centerY = canvas.height / 2
+        val path = Path()
+        walls.forEachIndexed { i, projectedWall ->
+            path.reset()
+            projectedWall.points.forEachIndexed { i, point ->
+                val x = point.x + centerX
+                val y = point.y + centerY
+                if (i == 0) {
+                    path.moveTo(x, y)
+                } else {
+                    path.lineTo(x, y)
+                }
+            }
+            paintWall.color = projectedWall.colors
+            canvas.drawPath(path, paintWall)
+            canvas.drawPath(path, paintLine)
+        }
     }
 
     override fun surfaceCreated(holder: SurfaceHolder?) {
