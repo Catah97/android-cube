@@ -34,7 +34,7 @@ class SimpleGestureListener(
         calculateAngle(minimum, distanceX) {
             scene.angleY = scene.angleY.moveAngle(it)
         }
-        calculateAngle(minimum, distanceY) {
+        calculateAngle(minimum, -distanceY) {
             scene.angleX = scene.angleX.moveAngle(it)
         }
         return false

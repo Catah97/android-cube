@@ -3,6 +3,7 @@ package com.example.cube
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.androidcube.databinding.ActivityMainBinding
+import com.example.cube.`object`.Axes
 import com.example.cube.`object`.Cube
 import com.example.cube.view.old.structs.Scene
 
@@ -17,7 +18,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
         val objectView = binding.objectView
         objectView.apply {
-            currentObject = Cube()
+            currentObjects.clear()
+            currentObjects.add(Axes())
+            currentObjects.add(Cube())
             if (savedInstanceState != null) {
                 val savedScene = savedInstanceState.getSerializable(SCENE_KEY) as Scene
                 scene.use(savedScene)

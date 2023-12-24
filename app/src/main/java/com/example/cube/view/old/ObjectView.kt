@@ -21,7 +21,7 @@ import kotlinx.coroutines.*
 
 class ObjectView: SurfaceView, SurfaceHolder.Callback {
 
-    var currentObject: Object? = null
+    val currentObjects = mutableListOf<Object>()
     val scene = Scene()
 
     private val scaleListener = ScaleGestureListener(scene)
@@ -42,8 +42,8 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
 
     private val wallColors = listOf(
             Color.BLUE,
-            Color.rgb(255, 165, 0),
-            Color.WHITE,
+            Color.GRAY,
+            Color.CYAN,
             Color.GREEN,
             Color.RED,
             Color.YELLOW
@@ -99,53 +99,54 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
                     if (surfaceHolder.surface.isValid) {
                         drawObject()
                     }
-                    scene.moveAngle()
                 }
             }
         }
     }
 
     private fun drawObject() {
-        currentObject?.apply {
-            val points = mutableMapOf<Point, ProjectedPoint>()
-            this.points.forEach {
-                val vec = it.toVector()
-                val rotatedX = rotationX(scene.angleX).preMultiply(vec)
-                val rotatedY = rotationY(scene.angleY).preMultiply(rotatedX)
-                val rotated = rotationZ(scene.angleZ).preMultiply(rotatedY)
-                val scale = 100.0 * scene.scaleFactor
-                val scaled = scale(scale).preMultiply(rotated)
-                val projection = projection().preMultiply(scaled)
-                val projectedPoint = ProjectedPoint(it, projection)
-                points[it] = projectedPoint
-            }
-            val connections = connections.map {
-                val p1 = points[it.p1]!!
-                val p2 = points[it.p2]!!
-                ProjectedConnection(it, p1, p2)
-            }
-            val walls = walls.mapIndexed { i, wall ->
-                val wallPoints = wall.points.map {
-                    points[it]!!
-                }
-                val color = wallColors[i % wallColors.size]
-                ProjectedWall(wall, color, wallPoints)
-            }.sortedBy { wall ->
-                wall.points.minOf {
-                    it.z
-                }
-            }
-            draw(points.values.toList(), connections, walls)
-        }
-    }
-
-    private fun draw(points: List<ProjectedPoint>, connections: List<ProjectedConnection>, walls: List<ProjectedWall>) {
         val canvas = surfaceHolder.lockCanvas()
         canvas.drawColor(Color.BLACK)
-        //drawPoints(canvas, points)
-        //drawConnections(canvas, connections)
-        drawWalls(canvas, walls)
+        currentObjects.forEach { currentObject ->
+            currentObject.apply {
+                val points = mutableMapOf<Point, ProjectedPoint>()
+                this.points.forEach {
+                    val vec = it.toVector()
+                    val rotatedX = rotationX(scene.angleX).preMultiply(vec)
+                    val rotatedY = rotationY(scene.angleY).preMultiply(rotatedX)
+                    val rotated = rotationZ(scene.angleZ).preMultiply(rotatedY)
+                    val scale = 100.0 * scene.scaleFactor
+                    val scaled = scale(scale).preMultiply(rotated)
+                    val projection = projection().preMultiply(scaled)
+                    val projectedPoint = ProjectedPoint(it, projection)
+                    points[it] = projectedPoint
+                }
+                val connections = connections.map {
+                    val p1 = points[it.p1]!!
+                    val p2 = points[it.p2]!!
+                    ProjectedConnection(it, p1, p2)
+                }
+                val walls = walls.mapIndexed { i, wall ->
+                    val wallPoints = wall.points.map {
+                        points[it]!!
+                    }
+                    val color = wallColors[i % wallColors.size]
+                    ProjectedWall(wall, color, wallPoints)
+                }.sortedBy { wall ->
+                    wall.points.minOf {
+                        it.z
+                    }
+                }
+                draw(canvas, points.values.toList(), connections, walls)
+            }
+        }
         surfaceHolder.unlockCanvasAndPost(canvas)
+    }
+
+    private fun draw(canvas: Canvas, points: List<ProjectedPoint>, connections: List<ProjectedConnection>, walls: List<ProjectedWall>) {
+        // drawPoints(canvas, points)
+        drawConnections(canvas, connections)
+        drawWalls(canvas, walls)
     }
 
     private fun drawPoints(canvas: Canvas, points: List<ProjectedPoint>) {
@@ -159,7 +160,6 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
     }
 
     private fun drawConnections(canvas: Canvas, connections: List<ProjectedConnection>) {
-        canvas.drawColor(Color.BLACK)
         val centerX = canvas.width / 2
         val centerY = canvas.height / 2
         for (connection in connections) {
