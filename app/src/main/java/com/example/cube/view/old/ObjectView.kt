@@ -12,17 +12,21 @@ import com.example.cube.`object`.structs.Point
 import com.example.cube.view.*
 import com.example.cube.view.gesture.ScaleGestureListener
 import com.example.cube.view.gesture.SimpleGestureListener
+import com.example.cube.view.old.structs.Camera
 import com.example.cube.view.old.structs.ProjectedConnection
 import com.example.cube.view.old.structs.ProjectedPoint
 import com.example.cube.view.old.structs.ProjectedWall
 import com.example.cube.view.old.structs.Scene
 import kotlinx.coroutines.*
+import org.apache.commons.math3.linear.MatrixUtils
+import org.apache.commons.math3.linear.RealVector
 
 
 class ObjectView: SurfaceView, SurfaceHolder.Callback {
 
     val currentObjects = mutableListOf<Object>()
     val scene = Scene()
+
 
     private val scaleListener = ScaleGestureListener(scene)
     private val gestureListener = SimpleGestureListener(scene)
@@ -106,6 +110,7 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
 
     private fun drawObject() {
         val canvas = surfaceHolder.lockCanvas()
+        val cameraProjection = scene.camera.createMatrix()
         canvas.drawColor(Color.BLACK)
         currentObjects.forEach { currentObject ->
             currentObject.apply {
@@ -115,10 +120,19 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
                     val rotatedX = rotationX(scene.angleX).preMultiply(vec)
                     val rotatedY = rotationY(scene.angleY).preMultiply(rotatedX)
                     val rotated = rotationZ(scene.angleZ).preMultiply(rotatedY)
-                    val scale = 100.0 * scene.scaleFactor
+                    val scale = SCALE_CONST * scene.scaleFactor
                     val scaled = scale(scale).preMultiply(rotated)
-                    val projection = projection().preMultiply(scaled)
-                    val projectedPoint = ProjectedPoint(it, projection)
+                    val moved = transformation(scene).preMultiply(scaled)
+                    val normalizedScaled = MatrixUtils.createRealVector(
+                        doubleArrayOf(
+                            moved.getEntry(0),
+                            moved.getEntry(1),
+                            moved.getEntry(2),
+                            1.0,
+                        )
+                    )
+                    val projection = cameraProjection.preMultiply(normalizedScaled)
+                    val projectedPoint = ProjectedPoint(projection)
                     points[it] = projectedPoint
                 }
                 val connections = connections.map {
@@ -207,5 +221,9 @@ class ObjectView: SurfaceView, SurfaceHolder.Callback {
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         gestureListener.width = null
         gestureListener.height = null
+    }
+
+    companion object {
+        private const val SCALE_CONST = 100.0
     }
 }

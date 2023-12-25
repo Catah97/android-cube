@@ -5,6 +5,7 @@ import android.os.Bundle
 import com.example.androidcube.databinding.ActivityMainBinding
 import com.example.cube.`object`.Axes
 import com.example.cube.`object`.Cube
+import com.example.cube.`object`.CubeOut
 import com.example.cube.view.old.structs.Scene
 
 class MainActivity : AppCompatActivity() {

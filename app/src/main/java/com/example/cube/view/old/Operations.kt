@@ -1,5 +1,6 @@
 package com.example.cube.view
 
+import com.example.cube.view.old.structs.Scene
 import org.apache.commons.math3.linear.MatrixUtils
 import org.apache.commons.math3.linear.RealMatrix
 import kotlin.math.cos
@@ -81,5 +82,19 @@ fun rotationZ(angle: Double) = MatrixUtils.createRealMatrix(
             0.0, 0.0, 1.0
 
         ),
+    )
+)
+
+fun transformation(scene: Scene) = MatrixUtils.createRealMatrix(
+    arrayOf(
+        doubleArrayOf(
+            1.0, 0.0, scene.transformationX.toDouble(),
+        ),
+        doubleArrayOf(
+            0.0, 1.0, scene.transformationY.toDouble(),
+        ),
+        doubleArrayOf(
+            0.0, 0.0,  1.0,
+        )
     )
 )

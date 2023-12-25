@@ -30,13 +30,8 @@ class SimpleGestureListener(
         distanceX: Float,
         distanceY: Float
     ): Boolean {
-        val minimum = minOf(width ?: 0, height ?: 0)
-        calculateAngle(minimum, distanceX) {
-            scene.angleY = scene.angleY.moveAngle(it)
-        }
-        calculateAngle(minimum, -distanceY) {
-            scene.angleX = scene.angleX.moveAngle(it)
-        }
+        scene.moveX(distanceX)
+        scene.moveY(distanceY)
         return false
     }
 
